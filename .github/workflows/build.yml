@@ -1,0 +1,42 @@
+name: Build Anisette Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ldc \
+            dub \
+            clang \
+            libssl-dev \
+            libz-dev
+
+      - name: Build
+        run: |
+          DC=ldc2 dub build \
+            -c static \
+            --build-mode allAtOnce \
+            -b release \
+            --compiler=ldc2
+
+      - name: Check binary
+        run: |
+          file anisette-v3-server
+          ldd anisette-v3-server || true
+          ls -lh anisette-v3-server
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: anisette-v3-server-linux-x86_64
+          path: anisette-v3-server
